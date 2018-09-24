@@ -18,6 +18,10 @@ variable "create_autoscalinggroup" {
   default     = true
 }
 
+variable "autoscalinggroup_type" {
+  default = "legacy"
+}
+
 variable "ecs_instance_scaling_create" {
   default     = false
   description = "Do we want to enable instance scaling for this ECS Cluster"

@@ -4,6 +4,17 @@ variable "tags" {
   default     = {}
 }
 
+# Small Lookup map to validate route53_record_type
+variable "allowed_autoscalinggroup_types" {
+  default = {
+    LEGACY     = "LEGACY"
+    AUTOUPDATE = "AUTOUPDATE"
+    MIGRATION  = "MIGRATION"
+  }
+}
+
+variable "autoscalinggroup_type" {}
+
 variable "create" {
   default = true
 }

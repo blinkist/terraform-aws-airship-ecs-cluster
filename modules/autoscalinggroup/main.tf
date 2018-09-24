@@ -1,6 +1,11 @@
 data "aws_region" "_" {}
 
 locals {
+  # Validate the autoscaling group types
+  autoscalinggroup_type = "${lookup(var.allowed_autoscalinggroup_types,var.autoscalinggroup_type)}"
+}
+
+locals {
   tags_asg_format = ["${null_resource.tags_as_list_of_maps.*.triggers}"]
   name            = "${var.name}"
 }
@@ -61,15 +66,21 @@ resource "aws_launch_configuration" "launch_config" {
   }
 }
 
+locals {
+  min_size        = "${lookup(var.cluster_properties, "ec2_asg_min")}"
+  max_size        = "${lookup(var.cluster_properties, "ec2_asg_max")}"
+  placement_group = "${lookup(var.cluster_properties, "ec2_placement_group", "")}"
+}
+
 resource "aws_autoscaling_group" "this" {
-  count = "${var.create ? 1 : 0 }"
+  count = "${var.create && ( local.autoscalinggroup_type == "MIGRATION" || local.autoscalinggroup_type == "LEGACY" ) ? 1 : 0 }"
   name  = "${local.name}"
 
   launch_configuration = "${aws_launch_configuration.launch_config.name}"
 
-  min_size        = "${lookup(var.cluster_properties, "ec2_asg_min")}"
-  max_size        = "${lookup(var.cluster_properties, "ec2_asg_max")}"
-  placement_group = "${lookup(var.cluster_properties, "ec2_placement_group", "")}"
+  min_size        = "${local.min_size}"
+  max_size        = "${local.max_size}"
+  placement_group = "${local.placement_group}"
 
   vpc_zone_identifier = [
     "${var.subnet_ids}",
@@ -94,4 +105,33 @@ resource "aws_autoscaling_group" "this" {
       list(map("key", "Name", "value", local.name, "propagate_at_launch", true)),
       local.tags_asg_format
    )}"]
+}
+
+resource "aws_cloudformation_stack" "autoscaling_group" {
+  count = "${var.create && ( local.autoscalinggroup_type == "MIGRATION" || local.autoscalinggroup_type == "AUTOUPDATE" ) ? 1 : 0 }"
+  name  = "${local.name}"
+
+  template_body = <<EOF
+{
+  "Resources": {
+    "ASG": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "UpdatePolicy": {
+        "AutoScalingRollingUpdate": {
+          "MinInstancesInService": "10",
+          "MaxBatchSize": "1",
+          "PauseTime": "PT15M"
+          "WaitOnResourceSignals": "true"
+        }
+      }
+    }
+  }
+}
+EOF
+}
+
+data "aws_cloudformation_stack" "autoscaling_group" {
+  count      = "${var.create && ( local.autoscalinggroup_type == "MIGRATION" || local.autoscalinggroup_type == "AUTOUPDATE" ) ? 1 : 0 }"
+  name       = "${local.name}"
+  depends_on = ["aws_cloudformation_stack.autoscaling_group"]
 }

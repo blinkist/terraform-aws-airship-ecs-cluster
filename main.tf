@@ -33,6 +33,7 @@ module "autoscalinggroup" {
   source                 = "./modules/autoscalinggroup/"
   create                 = "${var.create_autoscalinggroup && var.create}"
   name                   = "${var.name}"
+  autoscalinggroup_type  = "${var.autoscalinggroup_type}"
   cluster_properties     = "${var.cluster_properties}"
   vpc_security_group_ids = ["${var.vpc_security_group_ids}"]
   iam_instance_profile   = "${module.iam.ecs_instance_profile}"
@@ -46,7 +47,7 @@ module "autoscalinggroup" {
 #
 module "ecs_instance_scaling" {
   source                           = "./modules/ecs_instance_autoscaling/"
-  ecs_instance_scaling_create      = "${var.ecs_instance_scaling_create && var.create}"
+  ecs_instance_scaling_create      = "${var.ecs_instance_scaling_create && var.create && var.autoscalinggroup_type != "MIGRATION"}"
   asg_name                         = "${module.autoscalinggroup.asg_name}"
   cluster_name                     = "${var.name}"
   ecs_instance_draining_lambda_arn = "${var.ecs_instance_draining_lambda_arn}"
