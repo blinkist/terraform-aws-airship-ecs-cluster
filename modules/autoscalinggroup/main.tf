@@ -44,7 +44,7 @@ resource "aws_launch_configuration" "launch_config" {
   user_data = "${data.template_file.cloud_config_amazon.rendered}"
 
   root_block_device {
-    volume_size           = "15"
+    volume_size           = "${var.root_block_device_default_size}"
     volume_type           = "gp2"
     delete_on_termination = true
   }

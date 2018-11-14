@@ -33,3 +33,7 @@ variable "ami" {
   description = "The ami to use with the autoscaling group instances"
   default     = ""
 }
+
+variable "root_block_device_default_size" {
+  default = "30"
+}
