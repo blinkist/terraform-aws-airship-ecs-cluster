@@ -13,8 +13,8 @@ module "iam" {
   create = "${var.create_roles && var.create}"
 }
 
-# 
-# The actual ECS Cluster  
+#
+# The actual ECS Cluster
 #
 resource "aws_ecs_cluster" "this" {
   count = "${var.create ? 1 : 0 }"
@@ -33,6 +33,7 @@ module "autoscalinggroup" {
   source                 = "./modules/autoscalinggroup/"
   create                 = "${var.create_autoscalinggroup && var.create}"
   name                   = "${var.name}"
+  ami                    = "${local.ecs_ami_id}"
   cluster_properties     = "${var.cluster_properties}"
   vpc_security_group_ids = ["${var.vpc_security_group_ids}"]
   iam_instance_profile   = "${module.iam.ecs_instance_profile}"
