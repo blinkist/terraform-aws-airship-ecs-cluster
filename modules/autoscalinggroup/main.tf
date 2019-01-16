@@ -33,7 +33,7 @@ resource "aws_launch_configuration" "launch_config" {
   count = "${var.create ? 1 : 0 }"
 
   name_prefix   = "${local.name}-"
-  image_id      = "${data.aws_ami.ecs_ami.id}"
+  image_id      = "${var.ami}"
   instance_type = "${lookup(var.cluster_properties, "ec2_instance_type")}"
   key_name      = "${lookup(var.cluster_properties, "ec2_key_name")}"
 

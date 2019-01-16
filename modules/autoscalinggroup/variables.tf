@@ -31,5 +31,4 @@ variable "iam_instance_profile" {
 
 variable "ami" {
   description = "The ami to use with the autoscaling group instances"
-  default     = ""
 }
