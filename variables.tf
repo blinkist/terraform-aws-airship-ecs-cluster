@@ -19,6 +19,7 @@ locals {
   #2. Empty string ("") does not appear to evaluate to false so even though valid values are strings (AMI IDs) the default value has to look like a boolean "false" in order for the below to evaluate correctly and use the default value (the AMI ID returned by our filter)
   ecs_ami_id = "${var.ecs_ami_id ? var.ecs_ami_id : data.aws_ami.ecs_ami.id}"
 }
+
 variable "name" {
   type        = "string"
   description = "the short name of the environment that is used to define it"
@@ -38,9 +39,10 @@ variable "create_autoscalinggroup" {
   description = "Are we creating an autoscaling group"
   default     = true
 }
+
 variable "ecs_ami_id" {
   description = "AMI ID used for ECS instances (default is latest AWS ECS-optimized AMI)"
-  default = "false"
+  default     = "false"
 }
 
 variable "ecs_instance_scaling_create" {
