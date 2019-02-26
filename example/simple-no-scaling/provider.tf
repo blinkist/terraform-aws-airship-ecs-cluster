@@ -15,4 +15,3 @@ provider "aws" {
 variable "region" {
   default = "ap-southeast-2"
 }
-

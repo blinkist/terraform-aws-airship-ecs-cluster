@@ -4,6 +4,11 @@ variable "tags" {
   default     = {}
 }
 
+variable "placement_group" {
+  description = "The placement group name that this cluster should belong to"
+  default     = ""
+}
+
 variable "create" {
   default = true
 }

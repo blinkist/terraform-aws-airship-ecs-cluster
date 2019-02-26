@@ -1,5 +1,6 @@
 /* "Amazon ECS Ami is the AMI of choice" */
 data "aws_ami" "ecs_ami" {
+  count       = "${var.ami == "" ? "1" : "0"}"
   most_recent = true
 
   filter {

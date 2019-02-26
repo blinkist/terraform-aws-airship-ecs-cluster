@@ -33,7 +33,7 @@ module "autoscalinggroup" {
   source                 = "./modules/autoscalinggroup/"
   create                 = "${var.create_autoscalinggroup && var.create}"
   name                   = "${var.name}"
-  cluster_properties     = "${var.cluster_properties}"
+  cluster_properties     = "${local.cluster_properties}"
   vpc_security_group_ids = ["${var.vpc_security_group_ids}"]
   iam_instance_profile   = "${module.iam.ecs_instance_profile}"
   tags                   = "${var.tags}"
@@ -51,3 +51,18 @@ module "ecs_instance_scaling" {
   ecs_instance_draining_lambda_arn = "${var.ecs_instance_draining_lambda_arn}"
   ecs_instance_scaling_properties  = ["${var.ecs_instance_scaling_properties}"]
 }
+
+# module "ecs_update_lambdas" {
+#   source = "git::https://github.com/xero-oss/ecs-cluster-update-lambda.git//src"
+#   region = "${var.region}"
+# }
+
+
+##
+##Make sure that all tasks have this placement constraint
+##
+# placement_constraints {
+#   type       = "memberOf"
+#   expression = "attribute:drain !exists or attribute:drain != true"
+# }
+
