@@ -1,7 +1,7 @@
 /* "Amazon ECS Ami is the AMI of choice" */
 data "aws_ami" "ecs_ami" {
   most_recent = true
-  owners      = ["self"]
+  owners      = ["amazon"]
 
   filter {
     name   = "owner-alias"
