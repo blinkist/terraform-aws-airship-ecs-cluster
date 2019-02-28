@@ -51,4 +51,3 @@ module "ecs_instance_scaling" {
   ecs_instance_draining_lambda_arn = "${var.ecs_instance_draining_lambda_arn}"
   ecs_instance_scaling_properties  = ["${var.ecs_instance_scaling_properties}"]
 }
-
