@@ -2,6 +2,7 @@
 data "aws_ami" "ecs_ami" {
   count       = "${var.ami == "" ? "1" : "0"}"
   most_recent = true
+  owners      = ["amazon"]
 
   filter {
     name   = "owner-alias"
