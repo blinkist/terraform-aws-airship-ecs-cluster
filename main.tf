@@ -33,7 +33,7 @@ module "autoscalinggroup" {
   source                 = "./modules/autoscalinggroup/"
   create                 = "${var.create_autoscalinggroup && var.create}"
   name                   = "${var.name}"
-  cluster_properties     = "${var.cluster_properties}"
+  cluster_properties     = "${local.cluster_properties}"
   vpc_security_group_ids = ["${var.vpc_security_group_ids}"]
   iam_instance_profile   = "${module.iam.ecs_instance_profile}"
   tags                   = "${var.tags}"

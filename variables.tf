@@ -55,7 +55,7 @@ variable "subnet_ids" {
   default     = []
 }
 
-variable "cluster_properties" {
+variable "default_cluster_properties" {
   type = "map"
 
   default = {
@@ -71,7 +71,32 @@ variable "cluster_properties" {
     block_metadata_service = false
     efs_enabled            = "0"
     efs_id                 = ""
+
+    ## Because the autoscaling group automatically selects spot instances at the lowest price to create the cluster
+    ## Put several types of spot instance types here
+    ## https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstancesDistribution.html
+    ec2_instance_type_override_1 = "m4.xlarge"
+
+    ec2_instance_type_override_2 = "r4.xlarge"
+    ec2_instance_type_override_3 = "r5.large"
+
+    ## The percentage of ondemand instances to run in the cluster
+    ## Set this to 100 to only use on_demand instances or to a value 
+    ## between 1 and 100 to use a percentage of on_demand
+    on_demand_base_capacity = "0"
+
+    ## The extra capacity
+    on_demand_percentage_above_base_capacity = "0"
   }
+}
+
+variable "cluster_properties" {
+  type    = "map"
+  default = {}
+}
+
+locals {
+  cluster_properties = "${merge(var.default_cluster_properties, var.cluster_properties)}"
 }
 
 variable "tags" {

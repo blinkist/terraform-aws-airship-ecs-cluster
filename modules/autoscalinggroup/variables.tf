@@ -4,6 +4,11 @@ variable "tags" {
   default     = {}
 }
 
+variable "placement_group" {
+  description = "The placement group name that this cluster should belong to"
+  default     = ""
+}
+
 variable "create" {
   default = true
 }
@@ -32,4 +37,8 @@ variable "iam_instance_profile" {
 variable "ami" {
   description = "The ami to use with the autoscaling group instances"
   default     = ""
+}
+
+variable "root_block_device_default_size" {
+  default = "30"
 }
