@@ -135,7 +135,7 @@ module "ecs_web" {
 ```hcl
 module "ecs_fargate" { 
   source  = "blinkist/airship-ecs-cluster/aws"
-  version = "0.5.0"
+  version = "0.5.1"
 
   name = "${terraform.workspace}-web"
 
