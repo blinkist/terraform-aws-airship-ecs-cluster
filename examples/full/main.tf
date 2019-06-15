@@ -57,9 +57,9 @@ module "efs" {
 
   aws_region         = var.region
   vpc_id             = data.aws_vpc.selected.id
-  subnets            = data.aws_subnet.selected.id
-  availability_zones = data.aws_availability_zones.available.names[0]
-  security_groups    = data.aws_security_group.selected.id
+  subnets            = [ data.aws_subnet.selected.id ]
+  availability_zones = [ data.aws_availability_zones.available.names[0] ]
+  security_groups    = [ data.aws_security_group.selected.id ]
 
   #zone_id = var.aws_route53_dns_zone_id
 }
@@ -85,8 +85,8 @@ module "ecs_web" {
 
   name                   = "${terraform.workspace}-web" # re-used as a unique identifier for the creation of different resources
   vpc_id                 = data.aws_vpc.selected.id
-  subnet_ids             = data.aws_subnet.selected.id
-  vpc_security_group_ids = data.aws_security_group.selected.id # the security groups for the ec2 instances.
+  subnet_ids             = [data.aws_subnet.selected.id]
+  vpc_security_group_ids = [data.aws_security_group.selected.id] # the security groups for the ec2 instances.
 
   cluster_properties = {
     ec2_key_name      = aws_key_pair.main.key_name # ec2_key_name defines the keypair    
@@ -105,7 +105,7 @@ module "ecs_web" {
     efs_enabled      = true           # should EFS be mounted
     efs_id           = module.efs.id  # the id of the EFS volume to mount
     efs_mount_folder = "/mnt/efs"     # the folder to which the EFS volume will be mounted
-*/
+    */
   }
 
 
@@ -140,7 +140,7 @@ module "ecs_web" {
       scaling_adjustment = -1
     },
   ]
-*/
+  */
 
   tags = {
     Environment = terraform.workspace
