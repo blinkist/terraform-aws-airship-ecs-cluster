@@ -22,5 +22,5 @@ resource "aws_cloudwatch_metric_alarm" "alarm" {
     ClusterName = var.cluster_name
   }
 
-  alarm_actions = [ aws_autoscaling_policy.policy.*.arn[count.index] ]
+  alarm_actions = [aws_autoscaling_policy.policy.*.arn[count.index]]
 }
