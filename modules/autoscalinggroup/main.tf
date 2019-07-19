@@ -29,33 +29,46 @@ data "template_file" "cloud_config_amazon" {
   }
 }
 
-resource "aws_launch_configuration" "launch_config" {
+resource "aws_launch_template" "launch_template" {
   count = "${var.create ? 1 : 0 }"
 
-  name_prefix   = "${local.name}-"
-  image_id      = "${data.aws_ami.ecs_ami.id}"
-  instance_type = "${lookup(var.cluster_properties, "ec2_instance_type")}"
-  key_name      = "${lookup(var.cluster_properties, "ec2_key_name")}"
+  name_prefix            = "${local.name}-"
+  description            = "Template for EC2 instances used by ECS"
+  image_id               = "${data.aws_ami.ecs_ami.id}"
+  instance_type          = "${lookup(var.cluster_properties, "ec2_instance_type")}"
+  key_name               = "${lookup(var.cluster_properties, "ec2_key_name")}"
+  vpc_security_group_ids = ["${var.vpc_security_group_ids}"]
+  user_data              = "${base64encode(data.template_file.cloud_config_amazon.rendered)}"
 
-  security_groups = ["${var.vpc_security_group_ids}"]
-
-  iam_instance_profile = "${var.iam_instance_profile}"
-
-  user_data = "${data.template_file.cloud_config_amazon.rendered}"
-
-  root_block_device {
-    volume_size           = "15"
-    volume_type           = "gp2"
-    delete_on_termination = true
+  iam_instance_profile = {
+    arn = "${var.iam_instance_profile}"
   }
 
-  ebs_block_device {
-    device_name           = "/dev/xvdcz"
-    volume_size           = "${lookup(var.cluster_properties, "ec2_disk_size")}"
-    volume_type           = "${lookup(var.cluster_properties, "ec2_disk_type")}"
-    delete_on_termination = true
-    encrypted             = "${lookup(var.cluster_properties, "ec2_disk_encryption","true")}"
+  monitoring {
+    enabled = true
   }
+
+  block_device_mappings = [
+    {
+      device_name = "/dev/xvda"
+
+      ebs = {
+        volume_size           = "15"
+        volume_type           = "gp2"
+        delete_on_termination = true
+      }
+    },
+    {
+      device_name = "/dev/xvdcz"
+
+      ebs = {
+        volume_size           = "${lookup(var.cluster_properties, "ec2_disk_size")}"
+        volume_type           = "${lookup(var.cluster_properties, "ec2_disk_type")}"
+        delete_on_termination = true
+        encrypted             = "${lookup(var.cluster_properties, "ec2_disk_encryption","true")}"
+      }
+    },
+  ]
 
   lifecycle {
     create_before_destroy = true
@@ -66,7 +79,10 @@ resource "aws_autoscaling_group" "this" {
   count = "${var.create ? 1 : 0 }"
   name  = "${local.name}"
 
-  launch_configuration = "${aws_launch_configuration.launch_config.name}"
+  launch_template = {
+    id      = "${aws_launch_template.launch_template.id}"
+    version = "$Latest"
+  }
 
   min_size        = "${lookup(var.cluster_properties, "ec2_asg_min")}"
   max_size        = "${lookup(var.cluster_properties, "ec2_asg_max")}"
