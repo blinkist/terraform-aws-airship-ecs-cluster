@@ -38,6 +38,10 @@ module "autoscalinggroup" {
   iam_instance_profile   = "${module.iam.ecs_instance_profile}"
   tags                   = "${var.tags}"
   subnet_ids             = ["${var.subnet_ids}"]
+
+  enable_mixed_cluster                   = "${var.enable_mixed_cluster}"
+  mixed_cluster_instances_distribution   = "${var.mixed_cluster_instances_distribution}"
+  mixed_cluster_launch_template_override = ["${var.mixed_cluster_launch_template_override}"]
 }
 
 #

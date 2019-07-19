@@ -33,3 +33,18 @@ variable "ami" {
   description = "The ami to use with the autoscaling group instances"
   default     = ""
 }
+
+variable "enable_mixed_cluster" {
+  description = "If true, a mixed instance ASG is created, using the options from 'mixed_cluster_options'"
+  default     = false
+}
+
+variable "mixed_cluster_instances_distribution" {
+  description = "An object defining the on-demand vs. spot composition of a mixed cluster."
+  type        = "map"
+}
+
+variable "mixed_cluster_launch_template_override" {
+  description = "List of nested arguments provides the ability to specify multiple instance types."
+  type        = "list"
+}

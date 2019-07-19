@@ -75,28 +75,8 @@ resource "aws_launch_template" "launch_template" {
   }
 }
 
-resource "aws_autoscaling_group" "this" {
-  count = "${var.create ? 1 : 0 }"
-  name  = "${local.name}"
-
-  launch_template = {
-    id      = "${aws_launch_template.launch_template.id}"
-    version = "$Latest"
-  }
-
-  min_size        = "${lookup(var.cluster_properties, "ec2_asg_min")}"
-  max_size        = "${lookup(var.cluster_properties, "ec2_asg_max")}"
-  placement_group = "${lookup(var.cluster_properties, "ec2_placement_group", "")}"
-
-  vpc_zone_identifier = [
-    "${var.subnet_ids}",
-  ]
-
-  lifecycle {
-    create_before_destroy = true
-  }
-
-  enabled_metrics = [
+locals {
+  asg_enabled_metrics = [
     "GroupMinSize",
     "GroupMaxSize",
     "GroupDesiredCapacity",
@@ -107,8 +87,59 @@ resource "aws_autoscaling_group" "this" {
     "GroupTotalInstances",
   ]
 
-  tags = ["${concat(
+  asg_tags = ["${concat(
       list(map("key", "Name", "value", local.name, "propagate_at_launch", true)),
       local.tags_asg_format
    )}"]
+}
+
+# An ASG where every node is identical
+resource "aws_autoscaling_group" "homogenous" {
+  count = "${var.create && !var.enable_mixed_cluster ? 1 : 0 }"
+  name  = "${local.name}"
+
+  launch_template = {
+    id      = "${aws_launch_template.launch_template.id}"
+    version = "$Latest"
+  }
+
+  min_size            = "${lookup(var.cluster_properties, "ec2_asg_min")}"
+  max_size            = "${lookup(var.cluster_properties, "ec2_asg_max")}"
+  placement_group     = "${lookup(var.cluster_properties, "ec2_placement_group", "")}"
+  vpc_zone_identifier = ["${var.subnet_ids}"]
+  enabled_metrics     = ["${local.asg_enabled_metrics}"]
+  tags                = ["${local.asg_tags}"]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_autoscaling_group" "heterogenous" {
+  count = "${var.create && var.enable_mixed_cluster ? 1 : 0 }"
+  name  = "${local.name}"
+
+  #name  = "dummy"
+
+  mixed_instances_policy = {
+    instances_distribution = ["${var.mixed_cluster_instances_distribution}"]
+
+    launch_template {
+      launch_template_specification {
+        launch_template_id = "${aws_launch_template.launch_template.id}"
+        version            = "$Latest"
+      }
+
+      override = ["${var.mixed_cluster_launch_template_override}"]
+    }
+  }
+  min_size            = "${lookup(var.cluster_properties, "ec2_asg_min")}"
+  max_size            = "${lookup(var.cluster_properties, "ec2_asg_max")}"
+  placement_group     = "${lookup(var.cluster_properties, "ec2_placement_group", "")}"
+  vpc_zone_identifier = ["${var.subnet_ids}"]
+  enabled_metrics     = ["${local.asg_enabled_metrics}"]
+  tags                = ["${local.asg_tags}"]
+  lifecycle {
+    create_before_destroy = true
+  }
 }

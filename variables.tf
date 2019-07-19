@@ -84,3 +84,41 @@ variable "iam_role_description" {
   description = "A description of the IAM Role of the instances, sometimes used by 3rd party sw"
   default     = ""
 }
+
+variable "enable_mixed_cluster" {
+  description = "Create a mixed instance ASG, using the options from 'mixed_cluster_instances_distribution' and 'mixed_cluster_launch_template_override'"
+  default     = false
+}
+
+variable "mixed_cluster_instances_distribution" {
+  description = <<EOF
+An object defining the on-demand vs. spot composition of a mixed cluster. 
+See https://www.terraform.io/docs/providers/aws/r/autoscaling_group.html#mixed_instances_policy-instances_distribution"
+EOF
+
+  default = {
+    on_demand_base_capacity                  = 0   # Absolute minimum amount of desired capacity that must be fulfilled by on-demand instances
+    on_demand_percentage_above_base_capacity = 100 # Percentage split between on-demand and Spot instances above the base on-demand capacity.
+    spot_instance_pools                      = 2   # Number of Spot pools per availability zone to allocate capacity. EC2 Auto Scaling selects the cheapest Spot pools and evenly allocates Spot capacity across the number of Spot pools that you specify.
+    spot_max_price                           = ""  # Maximum price per unit hour that the user is willing to pay for the Spot instances. An empty string which means the on-demand price.
+  }
+}
+
+variable "mixed_cluster_launch_template_override" {
+  description = <<EOF
+List of nested arguments provides the ability to specify multiple instance types. 
+This will override the same parameter in the launch template. For on-demand instances, 
+Auto Scaling considers the order of preference of instance types to launch based on 
+the order specified in the overrides list. 
+See https://www.terraform.io/docs/providers/aws/r/autoscaling_group.html#override"
+EOF
+
+  default = [
+    {
+      instance_type = "t2.small"
+    },
+    {
+      instance_type = "t3.small"
+    },
+  ]
+}
