@@ -6,11 +6,11 @@ services:
   - docker
 
 before_install:
-  - docker pull hashicorp/terraform:light
+  - docker pull hashicorp/terraform:0.11.14
   - docker pull wata727/tflint:latest
 
 script:
-  - docker run --rm -v $(pwd):/data --workdir=/data -t hashicorp/terraform:light validate -check-variables=false
-  - docker run --rm -v $(pwd):/data --workdir=/data -t hashicorp/terraform:light fmt -write=false -diff=true -check=true
-  - docker run --rm -v $(pwd):/data --workdir=/data -t hashicorp/terraform:light get
-  - docker run --rm -v $(pwd):/data --workdir=/data -t wata727/tflint:latest --error-with-issues --var-file=test.tfvars
+  - docker run --rm -v $(pwd):/data --workdir=/data -t hashicorp/terraform:0.11.14 validate -check-variables=false
+  - docker run --rm -v $(pwd):/data --workdir=/data -t hashicorp/terraform:0.11.14 fmt -write=false -diff=true -check=true
+  - docker run --rm -v $(pwd):/data --workdir=/data -t hashicorp/terraform:0.11.14 get
+  - docker run --rm -v $(pwd):/data --workdir=/data -t wata727/tflint:latest --var-file=test.tfvars
