@@ -122,3 +122,13 @@ EOF
     },
   ]
 }
+
+variable "enable_detailed_monitoring" {
+  description = <<EOF
+Data is available in 1-minute periods for an additional cost. To get this level of data, you must specifically enable it for the instance. 
+For the instances where you've enabled detailed monitoring, you can also get aggregated data across groups of similar instances.
+If 'false' data is collected in 5 minute intervals.
+EOF
+
+  default = false
+}

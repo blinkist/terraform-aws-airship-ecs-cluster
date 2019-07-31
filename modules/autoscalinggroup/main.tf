@@ -45,7 +45,7 @@ resource "aws_launch_template" "launch_template" {
   }
 
   monitoring {
-    enabled = true
+    enabled = "${var.enable_detailed_monitoring}"
   }
 
   block_device_mappings = [

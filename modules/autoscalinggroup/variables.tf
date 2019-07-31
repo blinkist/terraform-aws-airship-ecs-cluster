@@ -29,14 +29,14 @@ variable "iam_instance_profile" {
   description = "The IAM Profile of the autoscaling group instances"
 }
 
-variable "ami" {
-  description = "The ami to use with the autoscaling group instances"
-  default     = ""
-}
+## Unused?
+# variable "ami" {
+#   description = "The ami to use with the autoscaling group instances"
+#   default     = ""
+# }
 
 variable "enable_mixed_cluster" {
   description = "If true, a mixed instance ASG is created, using the options from 'mixed_cluster_options'"
-  default     = false
 }
 
 variable "mixed_cluster_instances_distribution" {
@@ -47,4 +47,8 @@ variable "mixed_cluster_instances_distribution" {
 variable "mixed_cluster_launch_template_override" {
   description = "List of nested arguments provides the ability to specify multiple instance types."
   type        = "list"
+}
+
+variable "enable_detailed_monitoring" {
+  description = "Data is available in 1-minute periods for an additional cost"
 }

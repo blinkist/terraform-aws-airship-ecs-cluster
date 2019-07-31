@@ -30,14 +30,15 @@ resource "aws_ecs_cluster" "this" {
 # autoscalinggroup delivers the Autoscaling group with EC2 Instances
 #
 module "autoscalinggroup" {
-  source                 = "./modules/autoscalinggroup/"
-  create                 = "${var.create_autoscalinggroup && var.create}"
-  name                   = "${var.name}"
-  cluster_properties     = "${var.cluster_properties}"
-  vpc_security_group_ids = ["${var.vpc_security_group_ids}"]
-  iam_instance_profile   = "${module.iam.ecs_instance_profile}"
-  tags                   = "${var.tags}"
-  subnet_ids             = ["${var.subnet_ids}"]
+  source                     = "./modules/autoscalinggroup/"
+  create                     = "${var.create_autoscalinggroup && var.create}"
+  name                       = "${var.name}"
+  cluster_properties         = "${var.cluster_properties}"
+  vpc_security_group_ids     = ["${var.vpc_security_group_ids}"]
+  iam_instance_profile       = "${module.iam.ecs_instance_profile}"
+  tags                       = "${var.tags}"
+  subnet_ids                 = ["${var.subnet_ids}"]
+  enable_detailed_monitoring = "${var.enable_detailed_monitoring}"
 
   enable_mixed_cluster                   = "${var.enable_mixed_cluster}"
   mixed_cluster_instances_distribution   = "${var.mixed_cluster_instances_distribution}"
