@@ -7,11 +7,11 @@
  */
 
 terraform {
-  required_version = "~> 0.11.0"
+  required_version = ">= 0.12"
 }
 
 provider "aws" {
-  region                      = "${var.region}"
+  region                      = var.region
   skip_get_ec2_platforms      = true
   skip_metadata_api_check     = true
   skip_region_validation      = true
@@ -31,39 +31,39 @@ data "aws_vpc" "selected" {
   default = true
 }
 
-data "aws_availability_zones" "available" {}
+data "aws_availability_zones" "available" {
+}
 
 data "aws_subnet" "selected" {
-  availability_zone = "${data.aws_availability_zones.available.names[0]}"
+  availability_zone = data.aws_availability_zones.available.names[0]
   default_for_az    = true
-  vpc_id            = "${data.aws_vpc.selected.id}"
+  vpc_id            = data.aws_vpc.selected.id
 }
 
 data "aws_security_group" "selected" {
   name   = "default"
-  vpc_id = "${data.aws_vpc.selected.id}"
+  vpc_id = data.aws_vpc.selected.id
 }
 
 resource "aws_key_pair" "main" {
   key_name   = "deployer-key"
-  public_key = "${var.public_key}"
+  public_key = var.public_key
 }
 
 module "ecs_web" {
   source = "../.."
 
-  name                   = "${terraform.workspace}-web"               # re-used as a unique identifier for the creation of different resources
-  vpc_id                 = "${data.aws_vpc.selected.id}"
-  subnet_ids             = ["${data.aws_subnet.selected.id}"]
-  vpc_security_group_ids = ["${data.aws_security_group.selected.id}"] # the security groups for the ec2 instances.
+  name                   = "${terraform.workspace}-web" # re-used as a unique identifier for the creation of different resources
+  vpc_id                 = data.aws_vpc.selected.id
+  subnet_ids             = [data.aws_subnet.selected.id]
+  vpc_security_group_ids = [data.aws_security_group.selected.id] # the security groups for the ec2 instances.
 
   cluster_properties = {
-    ec2_key_name      = "${aws_key_pair.main.key_name}"
-    ec2_instance_type = "t3.nano"                       # This is ignored when using mixed clusters ...
-
+    ec2_key_name      = aws_key_pair.main.key_name
+    ec2_instance_type = "t3.nano" # This is ignored when using mixed clusters ...
     # EC2
-    ec2_asg_min   = 5     # the minimum size of the autoscaling group    
-    ec2_asg_max   = 5     # the maximum size of the autoscaling group    
+    ec2_asg_min   = 5 # the minimum size of the autoscaling group    
+    ec2_asg_max   = 5 # the maximum size of the autoscaling group    
     ec2_disk_size = 100
     ec2_disk_type = "gp2"
   }
@@ -100,6 +100,7 @@ module "ecs_web" {
   ]
 
   tags = {
-    Environment = "${terraform.workspace}"
+    Environment = terraform.workspace
   }
 }
+

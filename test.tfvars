@@ -1,3 +1,3 @@
 # dummy variables to use when running tflint against the modules
-name = "tflint-test"
+name        = "tflint-test"
 environment = "tflint-test"

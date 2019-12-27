@@ -6,11 +6,11 @@ services:
   - docker
 
 before_install:
-  - docker pull hashicorp/terraform:0.11.14
+  - docker pull hashicorp/terraform:0.12.18
   - docker pull wata727/tflint:latest
 
 script:
-  - docker run --rm -v $(pwd):/data --workdir=/data -t hashicorp/terraform:0.11.14 validate -check-variables=false
-  - docker run --rm -v $(pwd):/data --workdir=/data -t hashicorp/terraform:0.11.14 fmt -write=false -diff=true -check=true
-  - docker run --rm -v $(pwd):/data --workdir=/data -t hashicorp/terraform:0.11.14 get
+  - docker run --rm -v $(pwd):/data --workdir=/data -t hashicorp/terraform:0.12.18 init -backend=false examples/full
+  - docker run --rm -v $(pwd):/data --workdir=/data -t hashicorp/terraform:0.12.18 validate examples/full
+  - docker run --rm -v $(pwd):/data --workdir=/data -t hashicorp/terraform:0.12.18 fmt -write=false -diff=true -check=true -recursive
   - docker run --rm -v $(pwd):/data --workdir=/data -t wata727/tflint:latest --var-file=test.tfvars

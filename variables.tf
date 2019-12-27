@@ -1,62 +1,69 @@
 variable "name" {
-  type        = "string"
+  type        = string
   description = "the short name of the environment that is used to define it"
 }
 
 variable "create" {
+  type        = bool
   description = "Are we creating resources"
   default     = true
 }
 
 variable "create_roles" {
+  type        = bool
   description = "Are we creating iam roles"
   default     = true
 }
 
 variable "create_autoscalinggroup" {
+  type        = bool
   description = "Are we creating an autoscaling group"
   default     = true
 }
 
 variable "ecs_instance_scaling_create" {
+  type        = bool
   default     = false
   description = "Do we want to enable instance scaling for this ECS Cluster"
 }
 
 variable "ecs_instance_ebs_encryption" {
+  type        = bool
   default     = true
   description = "ecs_instance_ebs_encryption sets the Encryption property of the attached EBS Volumes"
 }
 
 variable "ecs_instance_draining_lambda_arn" {
+  type        = string
   description = "The Lambda function arn taking care of the ECS Draining lifecycle"
   default     = ""
 }
 
 variable "ecs_instance_scaling_properties" {
-  type    = "list"
+  type    = list(map(string))
   default = []
 }
 
 variable "vpc_id" {
-  type        = "string"
+  type        = string
   description = "the main vpc identifier"
   default     = ""
 }
 
 variable "vpc_security_group_ids" {
+  type        = list(string)
   description = "List of VPC security groups to associate"
   default     = []
 }
 
 variable "subnet_ids" {
-  type        = "list"
+  type        = list(string)
   description = "the list of subnet_ids the autoscaling groups will use"
   default     = []
 }
 
 variable "cluster_properties" {
-  type = "map"
+  type = map(string)
 
   default = {
     create                 = false
@@ -75,26 +82,29 @@ variable "cluster_properties" {
 }
 
 variable "tags" {
-  type    = "map"
+  type    = map(string)
   default = {}
 }
 
 variable "iam_role_description" {
-  type        = "string"
+  type        = string
   description = "A description of the IAM Role of the instances, sometimes used by 3rd party sw"
   default     = ""
 }
 
 variable "enable_mixed_cluster" {
+  type        = bool
   description = "Create a mixed instance ASG, using the options from 'mixed_cluster_instances_distribution' and 'mixed_cluster_launch_template_override'"
   default     = false
 }
 
 variable "mixed_cluster_instances_distribution" {
+  type        = map(string)
   description = <<EOF
 An object defining the on-demand vs. spot composition of a mixed cluster. 
 See https://www.terraform.io/docs/providers/aws/r/autoscaling_group.html#mixed_instances_policy-instances_distribution"
 EOF
+
 
   default = {
     on_demand_base_capacity                  = 0   # Absolute minimum amount of desired capacity that must be fulfilled by on-demand instances
@@ -105,6 +115,7 @@ EOF
 }
 
 variable "mixed_cluster_launch_template_override" {
+  type        = list(map(string))
   description = <<EOF
 List of nested arguments provides the ability to specify multiple instance types. 
 This will override the same parameter in the launch template. For on-demand instances, 
@@ -124,6 +135,7 @@ EOF
 }
 
 variable "enable_detailed_monitoring" {
+  type        = bool
   description = <<EOF
 Data is available in 1-minute periods for an additional cost. To get this level of data, you must specifically enable it for the instance. 
 For the instances where you've enabled detailed monitoring, you can also get aggregated data across groups of similar instances.
@@ -132,3 +144,4 @@ EOF
 
   default = false
 }
+

@@ -5,11 +5,11 @@
  */
 
 terraform {
-  required_version = "~> 0.11.0"
+  required_version = ">= 0.12"
 }
 
 provider "aws" {
-  region                      = "${var.region}"
+  region                      = var.region
   skip_get_ec2_platforms      = true
   skip_metadata_api_check     = true
   skip_region_validation      = true
@@ -29,77 +29,74 @@ data "aws_vpc" "selected" {
   default = true
 }
 
-data "aws_availability_zones" "available" {}
+data "aws_availability_zones" "available" {
+}
 
 data "aws_subnet" "selected" {
-  availability_zone = "${data.aws_availability_zones.available.names[0]}"
+  availability_zone = data.aws_availability_zones.available.names[0]
   default_for_az    = true
-  vpc_id            = "${data.aws_vpc.selected.id}"
+  vpc_id            = data.aws_vpc.selected.id
 }
 
 data "aws_security_group" "selected" {
   name   = "default"
-  vpc_id = "${data.aws_vpc.selected.id}"
+  vpc_id = data.aws_vpc.selected.id
 }
 
 module "efs" {
   source  = "cloudposse/efs/aws"
-  version = "0.9.0"
+  version = "0.13.0"
 
   namespace  = "eg"
   stage      = "prod"
   name       = "app"
   attributes = ["efs"]
 
-  aws_region         = "${var.region}"
-  vpc_id             = "${data.aws_vpc.selected.id}"
-  subnets            = ["${data.aws_subnet.selected.id}"]
-  availability_zones = ["${data.aws_availability_zones.available.names[0]}"]
-  security_groups    = ["${data.aws_security_group.selected.id}"]
-
-  #zone_id = var.aws_route53_dns_zone_id
+  region          = var.region
+  vpc_id          = data.aws_vpc.selected.id
+  subnets         = [data.aws_subnet.selected.id]
+  security_groups = [data.aws_security_group.selected.id]
+  zone_id         = var.aws_route53_dns_zone_id
 }
 
 resource "aws_key_pair" "main" {
   key_name   = "deployer-key"
-  public_key = "${var.public_key}"
+  public_key = var.public_key
 }
 
 # ECS Draining module will create a lambda function which takes care of instance draining.
 module "ecs_draining" {
   source  = "blinkist/airship-ecs-instance-draining/aws"
-  version = "0.1.0"
+  version = "v1.0.0"
   name    = "web"
 }
 
 module "ecs_web" {
   source = "../.."
 
-  name                   = "${terraform.workspace}-web"               # re-used as a unique identifier for the creation of different resources
-  vpc_id                 = "${data.aws_vpc.selected.id}"
-  subnet_ids             = ["${data.aws_subnet.selected.id}"]
-  vpc_security_group_ids = ["${data.aws_security_group.selected.id}"] # the security groups for the ec2 instances.
+  name                   = "${terraform.workspace}-web" # re-used as a unique identifier for the creation of different resources
+  vpc_id                 = data.aws_vpc.selected.id
+  subnet_ids             = [data.aws_subnet.selected.id]
+  vpc_security_group_ids = [data.aws_security_group.selected.id] # the security groups for the ec2 instances.
 
   cluster_properties = {
-    ec2_key_name      = "${aws_key_pair.main.key_name}" # ec2_key_name defines the keypair    
-    ec2_instance_type = "t2.small"                      # ec2_instance_type defines the instance type
-
+    ec2_key_name      = aws_key_pair.main.key_name # ec2_key_name defines the keypair    
+    ec2_instance_type = "t2.small"                 # ec2_instance_type defines the instance type
     # EC2
     ec2_asg_min            = 1     # the minimum size of the autoscaling group    
     ec2_asg_max            = 1     # the maximum size of the autoscaling group    
     ec2_disk_size          = 100   # the size in GB of the non-root volume of the EC2 Instance    
     ec2_disk_type          = "gp2" # the disktype of that EBS Volume
     block_metadata_service = true  # block the aws metadata service from the ECS Tasks. This is preferred security wise
-
     # EFS
-    efs_enabled      = true               # should EFS be mounted
-    efs_id           = "${module.efs.id}" # the id of the EFS volume to mount
-    efs_mount_folder = "/mnt/efs"         # the folder to which the EFS volume will be mounted
+    efs_enabled      = true          # should EFS be mounted
+    efs_id           = module.efs.id # the id of the EFS volume to mount
+    efs_mount_folder = "/mnt/efs"    # the folder to which the EFS volume will be mounted
   }
 
   # NB! NB! A draining lambda ARN needs to be defined !!
-  ecs_instance_scaling_create      = true                                         # set autscaling for the autoscaling group if true
-  ecs_instance_draining_lambda_arn = "${module.ecs_draining.lambda_function_arn}" # The lambda function which takes care of draining the ecs instance
+  ecs_instance_scaling_create      = true                                    # set autscaling for the autoscaling group if true
+  ecs_instance_draining_lambda_arn = module.ecs_draining.lambda_function_arn # The lambda function which takes care of draining the ecs instance
 
   # ecs_instance_scaling_properties defines how the ECS Cluster scales up / down
   ecs_instance_scaling_properties = [
@@ -128,6 +125,7 @@ module "ecs_web" {
   ]
 
   tags = {
-    Environment = "${terraform.workspace}"
+    Environment = terraform.workspace
   }
 }
+

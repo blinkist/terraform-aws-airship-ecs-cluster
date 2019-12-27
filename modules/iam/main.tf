@@ -1,11 +1,11 @@
 data "aws_iam_policy_document" "ecs_service" {
-  count = "${var.create ? 1 : 0 }"
+  count = var.create ? 1 : 0
 
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
 
-    principals = {
+    principals {
       type        = "Service"
       identifiers = ["ecs.amazonaws.com"]
     }
@@ -13,21 +13,21 @@ data "aws_iam_policy_document" "ecs_service" {
 }
 
 resource "aws_iam_role" "ecs_service" {
-  count              = "${var.create ? 1 : 0 }"
+  count              = var.create ? 1 : 0
   name               = "${var.name}-ecs-role"
-  assume_role_policy = "${data.aws_iam_policy_document.ecs_service.json}"
+  assume_role_policy = data.aws_iam_policy_document.ecs_service[0].json
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_service_role_attach" {
-  count      = "${var.create ? 1 : 0 }"
-  role       = "${aws_iam_role.ecs_service.name}"
+  count      = var.create ? 1 : 0
+  role       = aws_iam_role.ecs_service[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole"
 }
 
 resource "aws_iam_instance_profile" "ecs_cluster_ec2_instance_profile" {
-  count = "${var.create ? 1 : 0 }"
+  count = var.create ? 1 : 0
   name  = "${var.name}-ecs-cluster-instance-profile"
-  role  = "${aws_iam_role.ecs_cluster_ec2_instance_role.id}"
+  role  = aws_iam_role.ecs_cluster_ec2_instance_role[0].id
 
   lifecycle {
     create_before_destroy = true
@@ -40,13 +40,13 @@ resource "aws_iam_instance_profile" "ecs_cluster_ec2_instance_profile" {
 }
 
 data "aws_iam_policy_document" "ec2_instance" {
-  count = "${var.create ? 1 : 0 }"
+  count = var.create ? 1 : 0
 
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
 
-    principals = {
+    principals {
       type        = "Service"
       identifiers = ["ec2.amazonaws.com"]
     }
@@ -54,10 +54,10 @@ data "aws_iam_policy_document" "ec2_instance" {
 }
 
 resource "aws_iam_role" "ecs_cluster_ec2_instance_role" {
-  count              = "${var.create ? 1 : 0 }"
+  count              = var.create ? 1 : 0
   name               = "${var.name}_ecs-cluster-ec2_instance_role"
-  description        = "${var.iam_role_description}"
-  assume_role_policy = "${data.aws_iam_policy_document.ec2_instance.json}"
+  description        = var.iam_role_description
+  assume_role_policy = data.aws_iam_policy_document.ec2_instance[0].json
 
   lifecycle {
     create_before_destroy = true
@@ -65,9 +65,9 @@ resource "aws_iam_role" "ecs_cluster_ec2_instance_role" {
 }
 
 resource "aws_iam_role_policy" "ecs_cluster_ec2_instance_permissions" {
-  count = "${var.create ? 1 : 0 }"
+  count = var.create ? 1 : 0
   name  = "${var.name}-ecs-instance-permissions"
-  role  = "${aws_iam_role.ecs_cluster_ec2_instance_role.id}"
+  role  = aws_iam_role.ecs_cluster_ec2_instance_role[0].id
 
   policy = <<EOF
 {
@@ -105,4 +105,6 @@ resource "aws_iam_role_policy" "ecs_cluster_ec2_instance_permissions" {
   ]
 }
 EOF
+
 }
+

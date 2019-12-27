@@ -13,3 +13,4 @@ data "aws_ami" "ecs_ami" {
     values = ["amzn-ami-*-amazon-ecs-optimized*"]
   }
 }
+
