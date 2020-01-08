@@ -28,6 +28,6 @@ provider "template" {
 module "ecs_web" {
   source = "../.."
   create = false
-  name                   = "${terraform.workspace}-nocreate"
+  name   = "${terraform.workspace}-nocreate"
 }
 

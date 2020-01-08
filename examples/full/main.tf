@@ -67,7 +67,7 @@ resource "aws_key_pair" "main" {
 # ECS Draining module will create a lambda function which takes care of instance draining.
 module "ecs_draining" {
   source  = "blinkist/airship-ecs-instance-draining/aws"
-  version = "v1.0.0"
+  version = "1.0.1"
   name    = "web"
 }
 
